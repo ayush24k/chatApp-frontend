@@ -1,5 +1,5 @@
 'use client'
-import React, { useCallback, useContext, useEffect } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 
 interface SocketProviderProps {
     children?: React.ReactNode;
@@ -19,15 +19,20 @@ export const useSocket = () => {
 };
 
 export default function SocketProvider ({children}: SocketProviderProps) {
+    const [socket, setSocket] = useState<WebSocket | null>(null);
     const sendMessage: ISocketContext['sendMessage'] = useCallback((msg) => {
         console.log("send message", msg);
-    }, []);
+        if (socket) {
+            socket.send(msg);
+        }
+    }, [socket]);
 
     useEffect(() => {
-        const socket = new WebSocket("http://localhost:8000");
-
+        const _socket = new WebSocket("http://localhost:8000");
+        setSocket(_socket);
         return (() => {
-            socket.close();
+            _socket.close();
+            setSocket(null);
         })
     }, [])
 
